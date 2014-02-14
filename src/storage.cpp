@@ -33,10 +33,8 @@ void storedata()
     sql::Statement *stmt;
     sql::ResultSet *res;
 
-    /* Create a connection */
     driver = get_driver_instance();
     con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
-    /* Connect to the MySQL test database */
     con->setSchema("EVE_DATA");
 
     stmt = con->createStatement();
@@ -66,14 +64,12 @@ void removelowsec();
     sql::Statement *stmt;
     sql::ResultSet *res;
 
-    /* Create a connection */
     driver = get_driver_instance();
     con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
-    /* Connect to the MySQL test database */
     con->setSchema("EVE_DATA");
 
     stmt = con->createStatement();
-    stmt->execute("DELETE FROM temp WHERE systemid = ANY(SELECT solarSystemID FROM mapsolarsystems WHERE security <0.5)"); //needs to be writte
+    stmt->execute("DELETE FROM temp WHERE systemid = ANY(SELECT solarSystemID FROM mapsolarsystems WHERE security <0.5)");
     delete stmt;
     delete con; 
     }
@@ -94,14 +90,12 @@ void removenonman();
     sql::Statement *stmt;
     sql::ResultSet *res;
 
-    /* Create a connection */
     driver = get_driver_instance();
     con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
-    /* Connect to the MySQL test database */
     con->setSchema("EVE_DATA");
 
     stmt = con->createStatement();
-    stmt->execute(""); //needs to be writte
+    stmt->execute("DELETE FROM temp WHERE typeID NOT IN (SELECT productTypeID FROM invblueprinttypes)"); 
     delete stmt;
     delete con; 
     }
@@ -112,4 +106,5 @@ void removenonman();
         cout << ", SQLState: " << e.getSQLState() << " )" << endl;
     }
 }
+//invTypeMaterials stores material construction information
 
