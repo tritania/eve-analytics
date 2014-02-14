@@ -57,3 +57,59 @@ void storedata()
     }
 }
 
+void removelowsec(); 
+{
+     cout << "Removing low-sec systems from table" << endl;
+    try {
+    sql::Driver *driver;
+    sql::Connection *con;
+    sql::Statement *stmt;
+    sql::ResultSet *res;
+
+    /* Create a connection */
+    driver = get_driver_instance();
+    con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
+    /* Connect to the MySQL test database */
+    con->setSchema("EVE_DATA");
+
+    stmt = con->createStatement();
+    stmt->execute("DELETE FROM temp WHERE systemid = ANY(SELECT solarSystemID FROM mapsolarsystems WHERE security <0.5)"); //needs to be writte
+    delete stmt;
+    delete con; 
+    }
+    
+    catch (sql::SQLException &e){
+        cout << "# ERR: " << e.what();
+        cout << " (MySQL error code: " << e.getErrorCode();
+        cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+    }
+}
+
+void removenonman();
+{
+     cout << "Removing items that cannot be made" << endl;
+    try {
+    sql::Driver *driver;
+    sql::Connection *con;
+    sql::Statement *stmt;
+    sql::ResultSet *res;
+
+    /* Create a connection */
+    driver = get_driver_instance();
+    con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
+    /* Connect to the MySQL test database */
+    con->setSchema("EVE_DATA");
+
+    stmt = con->createStatement();
+    stmt->execute(""); //needs to be writte
+    delete stmt;
+    delete con; 
+    }
+    
+    catch (sql::SQLException &e){
+        cout << "# ERR: " << e.what();
+        cout << " (MySQL error code: " << e.getErrorCode();
+        cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+    }
+}
+

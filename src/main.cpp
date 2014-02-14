@@ -27,6 +27,7 @@ int main ()
     extract();
     strip();
     storedata();
+    removelowsec();
     
     return 0;
 }
