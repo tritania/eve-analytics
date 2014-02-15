@@ -14,5 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <string>
+ 
 void strip();
 void extract();
+void getSQLData();
+
+extern std::string url;
+extern std::string user;
+extern std::string password;
+extern std::string database;

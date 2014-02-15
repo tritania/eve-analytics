@@ -14,31 +14,4 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "storage.h"
-#include "fileio.h"
-#include "download.h"
-#include "economic.h"
-#include <iostream>
-using namespace std;
-
-    string url;
-    string user;
-    string password;
-    string database;
-
-int main ()
-{
-    
-    getSQLData();
-    
-    cout << "Starting" << endl;
-    download();
-    extract();
-    strip();
-    storedata();
-    removelowsec();
-    removenonman();
-    
-    
-    return 0;
-}
+void price();

@@ -22,6 +22,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include "storage.h"
+#include "fileio.h"
 using namespace std;
 
 void storedata()
@@ -34,8 +35,8 @@ void storedata()
     sql::ResultSet *res;
 
     driver = get_driver_instance();
-    con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
-    con->setSchema("EVE_DATA");
+    con = driver->connect(url,user,password);
+    con->setSchema(database);
 
     stmt = con->createStatement();
     stmt->execute("DROP TABLE IF EXISTS temp");
@@ -55,7 +56,8 @@ void storedata()
     }
 }
 
-void removelowsec(); 
+
+void removelowsec()
 {
      cout << "Removing low-sec systems from table" << endl;
     try {
@@ -65,8 +67,8 @@ void removelowsec();
     sql::ResultSet *res;
 
     driver = get_driver_instance();
-    con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
-    con->setSchema("EVE_DATA");
+    con = driver->connect(url,user,password);
+    con->setSchema(database);
 
     stmt = con->createStatement();
     stmt->execute("DELETE FROM temp WHERE systemid = ANY(SELECT solarSystemID FROM mapsolarsystems WHERE security <0.5)");
@@ -81,9 +83,9 @@ void removelowsec();
     }
 }
 
-void removenonman();
+void removenonman()
 {
-     cout << "Removing items that cannot be made" << endl;
+    cout << "Removing items that cannot be made" << endl;
     try {
     sql::Driver *driver;
     sql::Connection *con;
@@ -91,8 +93,8 @@ void removenonman();
     sql::ResultSet *res;
 
     driver = get_driver_instance();
-    con = driver->connect("tcp://127.0.0.1:3306", "root", "password");
-    con->setSchema("EVE_DATA");
+    con = driver->connect(url,user,password);
+    con->setSchema(database);
 
     stmt = con->createStatement();
     stmt->execute("DELETE FROM temp WHERE typeID NOT IN (SELECT productTypeID FROM invblueprinttypes)"); 

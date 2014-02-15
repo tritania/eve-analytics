@@ -46,3 +46,33 @@ void extract()
     string command = "gzip -d data/latest.dump.gz";
     system((const char*)command.c_str());
 }
+
+void getSQLData()
+{
+    ifstream file("data/SQLConfig.txt");
+    if (file.is_open())
+    {
+        string str; 
+        int i = 0;
+        while (getline(file, str))
+        {
+            switch(i)
+            {
+                case 0:
+                    url = str;
+                case 1:
+                    user = str;
+                case 2:
+                    password = str;
+                case 3:
+                    database = str;
+            }
+            i++;
+        }
+    }
+    else
+    {
+        file.open("data/SQLConfig.txt",fstream::out);
+        cout << "Please fill out the SQLConfig.txt file" << endl;
+    }
+}

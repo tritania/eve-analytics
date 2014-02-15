@@ -1,3 +1,7 @@
 churn
 compile.sh
 *.geany
+*.txt
+*.csv
+*.dump
+*.dump.gz
