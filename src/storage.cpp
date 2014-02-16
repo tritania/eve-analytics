@@ -41,8 +41,15 @@ void storedata()
     stmt = con->createStatement();
     stmt->execute("DROP TABLE IF EXISTS temp");
     stmt->execute("CREATE TABLE temp (orderid text, regionid text, systemid text, stationid text, typeid text, bid text, price text, minvolume text, volremain text, volenter text, issued text, duration text, ranges text, reportedby text, reportedtime text)");
-    stmt->execute("LOAD DATA LOCAL INFILE '/home/tritania/Development/Eve-Manufacturing/data/latest.csv' INTO TABLE temp FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' IGNORE 1 LINES");
+    stmt->execute("LOAD DATA LOCAL INFILE '/mnt/data/Development/Eve-Manufacturing/data/latest.csv' INTO TABLE temp FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' IGNORE 1 LINES");
     stmt->execute("ALTER TABLE temp DROP minvolume, DROP ranges, DROP reportedtime, DROP duration, DROP reportedby");
+    //split sell orders off main data
+    stmt->execute("DROP TABLE IF EXISTS temp2");
+    stmt->execute("CREATE TABLE temp2 LIKE temp1");
+    stmt->execute("INSERT INTO temp2 SELECT * FROM temp1 WHERE bid='0'");
+    stmt->execute("ALTER TABLE temp2 DROP bid");
+    stmt->execute("DELETE FROM temp2 WHERE systemid != '30000142'");
+    //split buy orders off main data
     stmt->execute("DELETE FROM temp WHERE bid='0'");
     stmt->execute("ALTER TABLE temp DROP bid");
     delete stmt;
