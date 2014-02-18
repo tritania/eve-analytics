@@ -45,8 +45,8 @@ void storedata()
     stmt->execute("ALTER TABLE temp DROP minvolume, DROP ranges, DROP reportedtime, DROP duration, DROP reportedby");
     //split sell orders off main data
     stmt->execute("DROP TABLE IF EXISTS temp2");
-    stmt->execute("CREATE TABLE temp2 LIKE temp1");
-    stmt->execute("INSERT INTO temp2 SELECT * FROM temp1 WHERE bid='0'");
+    stmt->execute("CREATE TABLE temp2 LIKE temp");
+    stmt->execute("INSERT INTO temp2 SELECT * FROM temp WHERE bid='0'");
     stmt->execute("ALTER TABLE temp2 DROP bid");
     stmt->execute("DELETE FROM temp2 WHERE systemid != '30000142'");
     //split buy orders off main data
