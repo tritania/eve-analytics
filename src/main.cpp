@@ -4,13 +4,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fstream>
+#include <algorithm>
+#include <vector>
 
 #include <curl/curl.h>
 #include <sqlite3.h>
 
-#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 using namespace std;
 
@@ -47,19 +51,24 @@ bool getFile(string filename) {
 int extractFile(string filename) {
 	
 	using namespace boost::iostreams;
+	using namespace boost::algorithm;
 	
-	ifstream file(filename, ios_base::in | ios_base::binary);
-	ofstream dfile("dump.csv");
+	ifstream file(filename, ios_base::in | ios_base::binary);	
 	
-    filtering_streambuf<input> in;
-    filtering_streambuf<output> out;
+    filtering_istream in;
     
     in.push(gzip_decompressor());
     in.push(file);
     
-    out.push(dfile);
-    
-    boost::iostreams::copy(in, out);
+    std::vector<std::string> tokens;
+        
+    for (string line; getline(in, line);) {
+		line.erase(remove(line.begin(), line.end(), '"'), line.end());
+		split(tokens, line, is_any_of(","));
+		
+		for(auto& s: tokens)
+			cout << s << endl;
+	}
     
 	return 1;
 }
