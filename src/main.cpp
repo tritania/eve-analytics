@@ -24,6 +24,10 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
+static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+	return 0;
+}
+
 bool getFile(string filename) {
     bool retval = true;
     string url = "https://eve-central.com/dumps/";
@@ -48,7 +52,7 @@ bool getFile(string filename) {
     return retval;
 }
 
-int extractFile(string filename) {
+int extractFile(sqlite3 *db, string filename) {
 	
 	using namespace boost::iostreams;
 	using namespace boost::algorithm;
@@ -61,13 +65,27 @@ int extractFile(string filename) {
     in.push(file);
     
     std::vector<std::string> tokens;
-        
+    int where =0;
+    int rc;
+    char *sql;
+    string q;
+    char *zErrMsg = 0;
+
     for (string line; getline(in, line);) {
-		line.erase(remove(line.begin(), line.end(), '"'), line.end());
-		split(tokens, line, is_any_of(","));
-		
-		for(auto& s: tokens)
-			cout << s << endl;
+		if (where != 0) { 
+			line.erase(remove(line.begin(), line.end(), '"'), line.end());
+			split(tokens, line, is_any_of(","));
+			
+			q = "INSERT INTO ECD(BIDID,REGIONID,SYSTEMID,STATIONID,TYPEID,BIDTYPE,PRICE,MINVOL,VOLREM,VOLENTER) "  \
+				  "VALUES (" + tokens[0] + "," + tokens[1] + "," + tokens[2] + "," + tokens[3] + "," + tokens[4] + "," + \
+				  tokens[5] + "," + tokens[6] + "," + tokens[7] + "," + tokens[8] + "," + tokens[9] + "); ";
+
+			rc = sqlite3_exec(db, q.c_str(), callback, 0, &zErrMsg);
+			if (rc) {
+				cout << sqlite3_errmsg(db) << endl;
+			}
+		}
+		where++;
 	}
     
 	return 1;
@@ -79,6 +97,8 @@ int main()
     sqlite3 *db;
     int rc;
     string in;
+    char *sql; //create table query
+    char *zErrMsg = 0;
 
     rc = sqlite3_open("data.db", &db);
 
@@ -87,6 +107,27 @@ int main()
     } else {
         cout << "Opened database successfully" << endl;
     }
+    
+	sql = "CREATE TABLE ECD("  \
+	 "ID INTEGER PRIMARY KEY  AUTOINCREMENT," \
+	 "BIDID        INT    NOT NULL," \
+	 "REGIONID     INT    NOT NULL," \
+	 "SYSTEMID     INT    NOT NULL," \
+	 "STATIONID    INT    NOT NULL," \
+	 "TYPEID       INT    NOT NULL," \
+	 "BIDTYPE      INT    NOT NULL," \
+	 "PRICE        REAL   NOT NULL," \
+	 "MINVOL       INT    NOT NULL," \
+	 "VOLREM       INT    NOT NULL," \
+	 "VOLENTER     INT    NOT NULL);";
+
+	rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+	if( rc != SQLITE_OK ){
+		cout << zErrMsg << endl;
+		sqlite3_free(zErrMsg);
+	}else{
+		cout << "Table created." << endl;
+	}
 
     cout << "Please enter a date to parse: ";
     getline(std::cin, in);
@@ -94,7 +135,7 @@ int main()
     
     in = in + ".dump.gz";
     //getFile(in);
-    extractFile(in);
+    extractFile(db, in);
 
 	cout << "Finished Downloading" << endl;
 
