@@ -3,7 +3,7 @@ CXX = clang++
 
 COMPILER_FLAGS = -std=c++11 -g -Wall
 
-LINKER_FLAGS = -lsqlite3 -lcurl
+LINKER_FLAGS = -lsqlite3 -lcurl -lboost_iostreams -lz 
 
 OUTOBJ = evea
 

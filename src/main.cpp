@@ -3,10 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fstream>
 
 #include <curl/curl.h>
 #include <sqlite3.h>
 
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+
+using namespace std;
 
 static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 {
@@ -14,16 +20,17 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
-bool getFile(std::string filename) {
+bool getFile(string filename) {
     bool retval = true;
-    std::string url = "https://eve-central.com/dumps/";
-    std::string furl = url + filename;
+    string url = "https://eve-central.com/dumps/";
+    string furl = url + filename;
     CURL *curl_handle = curl_easy_init();
     FILE *pagefile;
     
     curl_easy_setopt(curl_handle, CURLOPT_URL, furl.c_str());
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 	pagefile = fopen(filename.c_str(), "wb");
+	
 	if (pagefile) {
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
 		curl_easy_perform(curl_handle);
@@ -31,9 +38,30 @@ bool getFile(std::string filename) {
 	} else {
 		retval = false;
 	}
+	
 	curl_easy_cleanup(curl_handle);
 
     return retval;
+}
+
+int extractFile(string filename) {
+	
+	using namespace boost::iostreams;
+	
+	ifstream file(filename, ios_base::in | ios_base::binary);
+	ofstream dfile("dump.csv");
+	
+    filtering_streambuf<input> in;
+    filtering_streambuf<output> out;
+    
+    in.push(gzip_decompressor());
+    in.push(file);
+    
+    out.push(dfile);
+    
+    boost::iostreams::copy(in, out);
+    
+	return 1;
 }
 
 int main()
@@ -41,24 +69,25 @@ int main()
     curl_global_init(CURL_GLOBAL_ALL);
     sqlite3 *db;
     int rc;
-    std::string in;
+    string in;
 
     rc = sqlite3_open("data.db", &db);
 
     if (rc) {
-		std::cout << sqlite3_errmsg(db) << std::endl;
+		cout << sqlite3_errmsg(db) << endl;
     } else {
-        std::cout << "Opened database successfully" << std::endl;
+        cout << "Opened database successfully" << endl;
     }
 
-    std::cout << "Please enter a date to parse: ";
-    std::getline(std::cin, in);
-    std::cout << "Downloading" << std::endl;
+    cout << "Please enter a date to parse: ";
+    getline(std::cin, in);
+    cout << "Downloading" << endl;
     
     in = in + ".dump.gz";
-    getFile(in);
+    //getFile(in);
+    extractFile(in);
 
-	std::cout << "Finished Downloading" << std::endl;
+	cout << "Finished Downloading" << endl;
 
     sqlite3_close(db); //clean up
     return 0;
